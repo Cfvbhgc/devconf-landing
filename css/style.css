@@ -155,23 +155,6 @@ ul { list-style: none; }
 .nav-toggle.active span:nth-child(2) { opacity: 0; }
 .nav-toggle.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-@media (max-width: 768px) {
-  .nav-toggle { display: flex; }
-  .nav-links {
-    position: fixed;
-    top: 0;
-    right: -100%;
-    width: 70%;
-    height: 100vh;
-    flex-direction: column;
-    background: rgba(10, 10, 15, .97);
-    padding: 80px 40px;
-    gap: 24px;
-    transition: right .3s;
-  }
-  .nav-links.open { right: 0; }
-}
-
 /* --- Кнопки --- */
 .btn {
   display: inline-block;
@@ -1011,14 +994,117 @@ section {
 }
 
 /* --- Адаптив --- */
+
+/* Типографика через clamp() */
+.hero-title {
+  font-size: clamp(2.5rem, 10vw, 12rem);
+}
+
+.hero-subtitle {
+  font-size: clamp(0.9rem, 2.5vw, 1.5rem);
+}
+
+.section-title {
+  font-size: clamp(1.6rem, 5vw, 3.5rem);
+}
+
+.pricing-price {
+  font-size: clamp(2rem, 5vw, 3rem);
+}
+
+.countdown-number {
+  font-size: clamp(1.4rem, 4vw, 2.5rem);
+}
+
+/* Мобильное меню — fullscreen overlay */
 @media (max-width: 768px) {
+  .nav-toggle { display: flex; z-index: 1001; }
+
+  .nav-links {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(10, 10, 15, .97);
+    backdrop-filter: blur(16px);
+    gap: 32px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .3s, visibility .3s;
+    z-index: 1000;
+  }
+
+  .nav-links.open {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .nav-links a {
+    font-size: 1.4rem;
+    font-weight: 600;
+  }
+
+  /* Hero: упрощённый глитч — только text-shadow мерцание, без clip-path */
+  .glitch {
+    animation: glitch-glow 2s infinite alternate;
+  }
+
+  .glitch::before,
+  .glitch::after {
+    display: none;
+  }
+
+  @keyframes glitch-glow {
+    0%, 90%, 100% {
+      text-shadow: 0 0 10px rgba(0, 255, 136, .3);
+    }
+    92% {
+      text-shadow: 2px 0 #00ff88, -2px 0 #ff00ff;
+    }
+    95% {
+      text-shadow: -1px 0 #00ff88, 1px 0 #ff00ff;
+    }
+  }
+
+  /* Таймер */
+  .countdown {
+    gap: 8px;
+  }
+
   .countdown-block {
     min-width: 70px;
     padding: 12px 16px;
   }
 
-  .countdown-number {
-    font-size: 1.8rem;
+  /* Спикеры — одна колонка */
+  .speakers-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  /* Программа — вертикальный список, без горизонтального скролла */
+  .schedule-tabs {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    position: sticky;
+    top: 60px;
+    z-index: 10;
+    background: var(--dark);
+    padding: 12px 0;
+  }
+
+  .schedule-tab {
+    font-size: .85rem;
+    padding: 10px 20px;
   }
 
   .schedule-item {
@@ -1030,9 +1116,30 @@ section {
     min-width: unset;
   }
 
-  .schedule-tabs {
-    flex-direction: column;
-    align-items: center;
+  /* Тарифы — одна колонка, карточки во всю ширину */
+  .pricing-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .pricing-card.featured {
+    transform: none;
+  }
+
+  .pricing-card.featured:hover {
+    transform: translateY(-8px);
+  }
+
+  /* Форма wizard — крупные элементы */
+  .form-group input {
+    min-height: 44px;
+    font-size: 1rem;
+  }
+
+  .btn {
+    min-height: 44px;
+    font-size: 1rem;
+    padding: 14px 24px;
   }
 
   .plan-cards {
@@ -1044,21 +1151,60 @@ section {
     padding: 6px 10px;
   }
 
-  .pricing-card.featured {
-    transform: none;
+  .wizard-panel {
+    padding: 24px 16px;
   }
 
-  .pricing-card.featured:hover {
-    transform: translateY(-8px);
+  /* Marquee — медленнее, мельче */
+  .marquee-track {
+    animation-duration: 50s;
+    gap: 24px;
+  }
+
+  .partner-logo {
+    width: 110px;
+    height: 40px;
+  }
+
+  .partner-logo svg text {
+    font-size: 14px;
+  }
+
+  /* Секция padding */
+  section {
+    padding: 60px 0;
   }
 }
 
+/* Ещё меньшие экраны */
 @media (max-width: 480px) {
-  .hero-title {
-    font-size: clamp(2.5rem, 15vw, 5rem);
+  section {
+    padding: 48px 0;
+  }
+}
+
+/* Таймер на совсем узких экранах (320px) */
+@media (max-width: 380px) {
+  .countdown {
+    gap: 6px;
   }
 
-  section {
-    padding: 60px 0;
+  .countdown-block {
+    min-width: 60px;
+    padding: 8px 10px;
+  }
+
+  .countdown-label {
+    font-size: .65rem;
+  }
+}
+
+/* prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
   }
 }

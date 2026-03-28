@@ -81,24 +81,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  /* --- 3D Tilt для карточек спикеров --- */
-  document.querySelectorAll('[data-tilt]').forEach(card => {
-    card.addEventListener('mousemove', (e) => {
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-      const rotateX = ((y - centerY) / centerY) * -10;
-      const rotateY = ((x - centerX) / centerX) * 10;
+  /* --- 3D Tilt для карточек спикеров (только на устройствах с hover) --- */
+  if (window.matchMedia('(hover: hover)').matches) {
+    document.querySelectorAll('[data-tilt]').forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = ((y - centerY) / centerY) * -10;
+        const rotateY = ((x - centerX) / centerX) * 10;
 
-      card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
-    });
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+      });
 
-    card.addEventListener('mouseleave', () => {
-      card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)';
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)';
+      });
     });
-  });
+  }
 
   /* --- Тарифы: скролл к регистрации с выбранным планом --- */
   document.querySelectorAll('.pricing-btn').forEach(btn => {
@@ -236,46 +238,64 @@ document.addEventListener('DOMContentLoaded', () => {
   if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
     gsap.registerPlugin(ScrollTrigger);
 
+    const isMobile = window.innerWidth <= 768;
+
     // Побуквенная анимация заголовков секций
     document.querySelectorAll('[data-animate-title]').forEach(title => {
-      const text = title.textContent;
-      title.innerHTML = '';
-      text.split('').forEach(char => {
-        const span = document.createElement('span');
-        span.classList.add('char');
-        span.textContent = char === ' ' ? '\u00A0' : char;
-        title.appendChild(span);
-      });
+      if (isMobile) {
+        // На мобильных — простой fade-in вместо побуквенной анимации
+        gsap.from(title, {
+          opacity: 0,
+          y: 20,
+          duration: 0.6,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: title,
+            start: 'top 85%',
+            toggleActions: 'play none none none'
+          }
+        });
+      } else {
+        // На десктопе — побуквенная анимация
+        const text = title.textContent;
+        title.innerHTML = '';
+        text.split('').forEach(char => {
+          const span = document.createElement('span');
+          span.classList.add('char');
+          span.textContent = char === ' ' ? '\u00A0' : char;
+          title.appendChild(span);
+        });
 
-      // Сохраняем pseudo-element ::after
-      const afterEl = document.createElement('span');
-      afterEl.style.display = 'block';
-      afterEl.style.width = '60px';
-      afterEl.style.height = '3px';
-      afterEl.style.background = '#00ff88';
-      afterEl.style.margin = '16px auto 0';
-      afterEl.style.borderRadius = '2px';
-      title.appendChild(afterEl);
+        // Сохраняем pseudo-element ::after
+        const afterEl = document.createElement('span');
+        afterEl.style.display = 'block';
+        afterEl.style.width = '60px';
+        afterEl.style.height = '3px';
+        afterEl.style.background = '#00ff88';
+        afterEl.style.margin = '16px auto 0';
+        afterEl.style.borderRadius = '2px';
+        title.appendChild(afterEl);
 
-      gsap.to(title.querySelectorAll('.char'), {
-        opacity: 1,
-        y: 0,
-        stagger: 0.04,
-        duration: 0.6,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: title,
-          start: 'top 85%',
-          toggleActions: 'play none none none'
-        }
-      });
+        gsap.to(title.querySelectorAll('.char'), {
+          opacity: 1,
+          y: 0,
+          stagger: 0.04,
+          duration: 0.6,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: title,
+            start: 'top 85%',
+            toggleActions: 'play none none none'
+          }
+        });
+      }
     });
 
     // Карточки спикеров — stagger fade-in
     gsap.from('.speaker-card', {
       opacity: 0,
       y: 60,
-      stagger: 0.15,
+      stagger: isMobile ? 0.08 : 0.15,
       duration: 0.8,
       ease: 'power3.out',
       scrollTrigger: {
@@ -285,20 +305,37 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // Программа — scroll reveal
-    document.querySelectorAll('[data-scroll-reveal]').forEach(item => {
-      gsap.from(item, {
-        opacity: 0,
-        x: -40,
-        duration: 0.6,
-        ease: 'power2.out',
-        scrollTrigger: {
-          trigger: item,
-          start: 'top 90%',
-          toggleActions: 'play none none none'
-        }
+    // Программа — scroll reveal (вертикальный список на мобильных)
+    if (!isMobile) {
+      document.querySelectorAll('[data-scroll-reveal]').forEach(item => {
+        gsap.from(item, {
+          opacity: 0,
+          x: -40,
+          duration: 0.6,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: item,
+            start: 'top 90%',
+            toggleActions: 'play none none none'
+          }
+        });
       });
-    });
+    } else {
+      // На мобильных — простой fade без горизонтального сдвига
+      document.querySelectorAll('[data-scroll-reveal]').forEach(item => {
+        gsap.from(item, {
+          opacity: 0,
+          y: 20,
+          duration: 0.5,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: item,
+            start: 'top 92%',
+            toggleActions: 'play none none none'
+          }
+        });
+      });
+    }
 
     // Тарифы — slide up (без скрытия через opacity)
     gsap.from('.pricing-card', {
