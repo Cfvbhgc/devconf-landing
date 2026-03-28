@@ -351,6 +351,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  /* --- Floating CTA — показывать только после hero --- */
+  const floatingCta = document.querySelector('.floating-cta');
+  const heroSection = document.querySelector('.hero');
+  if (floatingCta && heroSection) {
+    floatingCta.style.opacity = '0';
+    floatingCta.style.pointerEvents = 'none';
+    floatingCta.style.transition = 'opacity 0.3s ease';
+
+    const heroObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          floatingCta.style.opacity = '0';
+          floatingCta.style.pointerEvents = 'none';
+        } else {
+          floatingCta.style.opacity = '1';
+          floatingCta.style.pointerEvents = 'auto';
+        }
+      });
+    }, { threshold: 0.1 });
+    heroObserver.observe(heroSection);
+  }
+
   /* --- Плавный скролл для CTA кнопок --- */
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', (e) => {
