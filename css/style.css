@@ -1016,6 +1016,21 @@ section {
   font-size: clamp(1.4rem, 4vw, 2.5rem);
 }
 
+/* Разделители между секциями */
+section + section::before {
+  content: '';
+  display: block;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #00ff88, #6c2bd9, transparent);
+  margin: 0 auto;
+  width: 60%;
+}
+
+/* Floating CTA — скрыта на десктопе */
+@media (min-width: 769px) {
+  .floating-cta { display: none; }
+}
+
 /* Мобильное меню — fullscreen overlay */
 @media (max-width: 768px) {
   .nav-toggle { display: flex; z-index: 1001; }
@@ -1051,7 +1066,24 @@ section {
     font-weight: 600;
   }
 
-  /* Hero: упрощённый глитч — только text-shadow мерцание, без clip-path */
+  /* Hero: яркий gradient */
+  .hero {
+    background: linear-gradient(135deg, #6c2bd9, #4c1d95, #2d1b69);
+    background-size: 400% 400%;
+    animation: gradientShift 8s ease infinite;
+  }
+
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* Hero title: глитч text-shadow мерцание */
+  .hero-title {
+    font-size: clamp(2.5rem, 10vw, 8rem);
+  }
+
   .glitch {
     animation: glitch-glow 2s infinite alternate;
   }
@@ -1073,23 +1105,62 @@ section {
     }
   }
 
-  /* Таймер */
+  /* Таймер: 4 блока в 320px */
   .countdown {
     gap: 8px;
   }
 
   .countdown-block {
-    min-width: 70px;
-    padding: 12px 16px;
+    min-width: 60px;
+    padding: 10px 8px;
   }
 
-  /* Спикеры — одна колонка */
+  .countdown-number {
+    font-size: clamp(1.5rem, 5vw, 3rem);
+  }
+
+  /* Спикеры — одна колонка, крупные фото */
   .speakers-grid {
     grid-template-columns: 1fr;
     gap: 20px;
   }
 
-  /* Программа — вертикальный список, без горизонтального скролла */
+  .speaker-card {
+    padding: 0;
+    padding-bottom: 24px;
+    text-align: left;
+  }
+
+  .speaker-photo {
+    width: 100%;
+    height: 200px;
+    border-radius: 12px 12px 0 0;
+    margin: 0 0 16px 0;
+    border: none;
+    box-shadow: none;
+  }
+
+  .speaker-photo img {
+    border-radius: 12px 12px 0 0;
+  }
+
+  .speaker-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    padding: 0 20px;
+  }
+
+  .speaker-role {
+    font-size: 0.95rem;
+    padding: 0 20px;
+  }
+
+  .speaker-topic {
+    font-size: 0.95rem;
+    padding: 0 20px;
+  }
+
+  /* Программа — sticky табы */
   .schedule-tabs {
     flex-direction: row;
     flex-wrap: wrap;
@@ -1103,20 +1174,39 @@ section {
   }
 
   .schedule-tab {
-    font-size: .85rem;
-    padding: 10px 20px;
+    font-size: 1rem;
+    padding: 12px 20px;
   }
 
   .schedule-item {
     flex-direction: column;
     gap: 8px;
+    border-left-width: 3px;
+  }
+
+  /* Трек-цвета border-left */
+  .schedule-item:has(.track-frontend) {
+    border-left-color: #00ff88;
+  }
+
+  .schedule-item:has(.track-backend) {
+    border-left-color: #00d4ff;
+  }
+
+  .schedule-item:has(.track-devops) {
+    border-left-color: #6c2bd9;
   }
 
   .schedule-time {
     min-width: unset;
+    font-size: 1.1rem;
   }
 
-  /* Тарифы — одна колонка, карточки во всю ширину */
+  .schedule-info h3 {
+    font-weight: 700;
+  }
+
+  /* Тарифы — одна колонка, VIP выделение */
   .pricing-grid {
     grid-template-columns: 1fr;
     gap: 20px;
@@ -1124,6 +1214,8 @@ section {
 
   .pricing-card.featured {
     transform: none;
+    box-shadow: 0 0 30px rgba(108, 43, 217, 0.3);
+    border: 2px solid #6c2bd9;
   }
 
   .pricing-card.featured:hover {
@@ -1173,6 +1265,30 @@ section {
   /* Секция padding */
   section {
     padding: 60px 0;
+  }
+
+  /* Floating CTA */
+  .floating-cta {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    background: #6c2bd9;
+    color: white;
+    padding: 14px 32px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1rem;
+    box-shadow: 0 4px 20px rgba(108, 43, 217, 0.5);
+    animation: ctaPulse 2s ease-in-out infinite;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  @keyframes ctaPulse {
+    0%, 100% { box-shadow: 0 4px 20px rgba(108, 43, 217, 0.5); }
+    50% { box-shadow: 0 4px 40px rgba(108, 43, 217, 0.8); }
   }
 }
 
