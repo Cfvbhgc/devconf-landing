@@ -1,5 +1,5 @@
 /* ============================================
-   DevConf 2025 — Cyberpunk Landing Page
+   DevConf 2026 — Cyberpunk Landing Page
    ============================================ */
 
 /* --- CSS переменные --- */
@@ -562,6 +562,12 @@ section {
 }
 
 /* --- Тарифы --- */
+.pricing {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
 .pricing-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -577,6 +583,8 @@ section {
   border: 1px solid rgba(255, 255, 255, .05);
   position: relative;
   transition: transform .3s, box-shadow .3s, border-color .3s;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 .pricing-card:hover {

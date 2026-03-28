@@ -1,5 +1,5 @@
 /* ============================================
-   DevConf 2025 — Основная логика
+   DevConf 2026 — Основная логика
    ============================================ */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* --- Таймер обратного отсчёта --- */
-  const targetDate = new Date('2025-12-15T10:00:00').getTime();
+  const targetDate = new Date('2026-12-15T10:00:00').getTime();
   const cdDays = document.getElementById('cd-days');
   const cdHours = document.getElementById('cd-hours');
   const cdMinutes = document.getElementById('cd-minutes');
@@ -300,9 +300,8 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // Тарифы — fade in
+    // Тарифы — slide up (без скрытия через opacity)
     gsap.from('.pricing-card', {
-      opacity: 0,
       y: 40,
       stagger: 0.2,
       duration: 0.7,
