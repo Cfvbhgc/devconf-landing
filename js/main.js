@@ -1,264 +1,329 @@
-/* ========== COUNTDOWN TIMER ========== */
-(function initCountdown() {
-  const target = new Date('2025-12-15T10:00:00').getTime();
+/* ============================================
+   DevConf 2025 — Основная логика
+   ============================================ */
 
-  function update() {
+document.addEventListener('DOMContentLoaded', () => {
+
+  /* --- Навигация: скролл-стиль и мобильное меню --- */
+  const navbar = document.getElementById('navbar');
+  const navToggle = document.getElementById('navToggle');
+  const navLinks = document.getElementById('navLinks');
+
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 50);
+  });
+
+  navToggle.addEventListener('click', () => {
+    navToggle.classList.toggle('active');
+    navLinks.classList.toggle('open');
+  });
+
+  // Закрытие меню при клике по ссылке
+  navLinks.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      navToggle.classList.remove('active');
+      navLinks.classList.remove('open');
+    });
+  });
+
+  /* --- Таймер обратного отсчёта --- */
+  const targetDate = new Date('2025-12-15T10:00:00').getTime();
+  const cdDays = document.getElementById('cd-days');
+  const cdHours = document.getElementById('cd-hours');
+  const cdMinutes = document.getElementById('cd-minutes');
+  const cdSeconds = document.getElementById('cd-seconds');
+
+  function updateCountdown() {
     const now = Date.now();
-    let diff = target - now;
-    if (diff < 0) diff = 0;
+    const diff = targetDate - now;
+
+    if (diff <= 0) {
+      cdDays.textContent = '0';
+      cdHours.textContent = '0';
+      cdMinutes.textContent = '0';
+      cdSeconds.textContent = '0';
+      return;
+    }
 
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-    document.getElementById('cd-days').textContent = String(days).padStart(2, '0');
-    document.getElementById('cd-hours').textContent = String(hours).padStart(2, '0');
-    document.getElementById('cd-minutes').textContent = String(minutes).padStart(2, '0');
-    document.getElementById('cd-seconds').textContent = String(seconds).padStart(2, '0');
+    // Обновление с flip-анимацией при смене значения
+    updateDigit(cdDays, String(days));
+    updateDigit(cdHours, String(hours).padStart(2, '0'));
+    updateDigit(cdMinutes, String(minutes).padStart(2, '0'));
+    updateDigit(cdSeconds, String(seconds).padStart(2, '0'));
   }
 
-  update();
-  setInterval(update, 1000);
-})();
-
-/* ========== SPLIT TEXT ANIMATION ========== */
-function splitTextIntoChars(el) {
-  const text = el.textContent;
-  el.textContent = '';
-  text.split('').forEach(function(char) {
-    const span = document.createElement('span');
-    span.className = 'char';
-    span.textContent = char === ' ' ? '\u00A0' : char;
-    el.appendChild(span);
-  });
-}
-
-document.querySelectorAll('.split-text').forEach(function(el) {
-  splitTextIntoChars(el);
-});
-
-/* ========== GSAP + SCROLLTRIGGER ========== */
-gsap.registerPlugin(ScrollTrigger);
-
-// Hero tagline — letter by letter
-document.querySelectorAll('.hero__tagline .char').forEach(function(char, i) {
-  gsap.to(char, {
-    opacity: 1,
-    y: 0,
-    duration: 0.4,
-    delay: 0.5 + i * 0.03,
-    ease: 'power2.out'
-  });
-});
-
-// Section titles — letter by letter on scroll
-document.querySelectorAll('.section-title').forEach(function(title) {
-  const chars = title.querySelectorAll('.char');
-  gsap.to(chars, {
-    opacity: 1,
-    y: 0,
-    duration: 0.3,
-    stagger: 0.03,
-    ease: 'power2.out',
-    scrollTrigger: {
-      trigger: title,
-      start: 'top 85%',
-      toggleActions: 'play none none none'
+  function updateDigit(el, val) {
+    if (el.textContent !== val) {
+      el.classList.add('flip');
+      el.textContent = val;
+      setTimeout(() => el.classList.remove('flip'), 400);
     }
-  });
-});
-
-// Speaker cards — fade in staggered
-gsap.utils.toArray('.speaker-card').forEach(function(card, i) {
-  gsap.from(card, {
-    opacity: 0,
-    y: 60,
-    duration: 0.6,
-    delay: i * 0.1,
-    ease: 'power2.out',
-    scrollTrigger: {
-      trigger: card,
-      start: 'top 88%',
-      toggleActions: 'play none none none'
-    }
-  });
-});
-
-// Schedule items — animated appearance
-function animateScheduleItems() {
-  const activeDay = document.querySelector('.schedule__day.active');
-  if (!activeDay) return;
-  const items = activeDay.querySelectorAll('.schedule__item');
-  items.forEach(function(item, i) {
-    item.classList.remove('visible');
-    setTimeout(function() {
-      item.classList.add('visible');
-    }, 100 + i * 80);
-  });
-}
-
-// Initial animation for schedule
-ScrollTrigger.create({
-  trigger: '.schedule',
-  start: 'top 80%',
-  onEnter: animateScheduleItems,
-  once: true
-});
-
-// Registration section fade in
-gsap.from('.reg-wizard', {
-  opacity: 0,
-  y: 40,
-  duration: 0.8,
-  ease: 'power2.out',
-  scrollTrigger: {
-    trigger: '.registration',
-    start: 'top 80%',
-    toggleActions: 'play none none none'
   }
-});
 
-/* ========== 3D TILT EFFECT ========== */
-document.querySelectorAll('[data-tilt]').forEach(function(card) {
-  card.addEventListener('mousemove', function(e) {
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    const rotateX = ((y - centerY) / centerY) * -8;
-    const rotateY = ((x - centerX) / centerX) * 8;
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
 
-    card.style.transform = 'perspective(800px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) scale(1.02)';
+  /* --- Табы программы --- */
+  const tabs = document.querySelectorAll('.schedule-tab');
+  const days = document.querySelectorAll('.schedule-day');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      days.forEach(d => d.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(`day-${tab.dataset.day}`).classList.add('active');
+    });
   });
 
-  card.addEventListener('mouseleave', function() {
-    card.style.transform = 'perspective(800px) rotateX(0) rotateY(0) scale(1)';
+  /* --- 3D Tilt для карточек спикеров --- */
+  document.querySelectorAll('[data-tilt]').forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const rotateX = ((y - centerY) / centerY) * -10;
+      const rotateY = ((x - centerX) / centerX) * 10;
+
+      card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+    });
+
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)';
+    });
   });
-});
 
-/* ========== SCHEDULE TABS ========== */
-document.querySelectorAll('.schedule__tab').forEach(function(tab) {
-  tab.addEventListener('click', function() {
-    document.querySelectorAll('.schedule__tab').forEach(function(t) { t.classList.remove('active'); });
-    document.querySelectorAll('.schedule__day').forEach(function(d) { d.classList.remove('active'); });
+  /* --- Тарифы: скролл к регистрации с выбранным планом --- */
+  document.querySelectorAll('.pricing-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const plan = btn.dataset.plan;
+      // Выбираем соответствующий radio
+      const radio = document.querySelector(`input[name="plan"][value="${plan}"]`);
+      if (radio) radio.checked = true;
 
-    tab.classList.add('active');
-    var dayNum = tab.getAttribute('data-day');
-    document.getElementById('day-' + dayNum).classList.add('active');
-    animateScheduleItems();
+      // Переключаем wizard на шаг 2
+      goToStep(2);
+      validateStep2();
+
+      // Скроллим к форме
+      document.getElementById('registration').scrollIntoView({ behavior: 'smooth' });
+    });
   });
-});
 
-/* ========== REGISTRATION WIZARD ========== */
-(function initRegWizard() {
-  var currentStep = 1;
-  var form = document.getElementById('reg-form');
+  /* --- Wizard регистрации --- */
+  let currentStep = 1;
+  const wizardTrack = document.getElementById('wizardTrack');
+  const wizardSteps = document.querySelectorAll('.wizard-step');
+  const step1Next = document.getElementById('step1Next');
+  const step2Next = document.getElementById('step2Next');
+  const confirmBtn = document.getElementById('confirmBtn');
+  const successScreen = document.getElementById('successScreen');
+  const wizardViewport = document.querySelector('.wizard-viewport');
 
-  var ticketLabels = {
-    standard: 'Standard',
-    vip: 'VIP',
-    online: 'Online'
-  };
+  const regName = document.getElementById('reg-name');
+  const regEmail = document.getElementById('reg-email');
+  const regPhone = document.getElementById('reg-phone');
+  const regPromo = document.getElementById('reg-promo');
 
-  var ticketPrices = {
-    standard: '5 000 \u20BD',
-    vip: '15 000 \u20BD',
-    online: '2 000 \u20BD'
-  };
-
+  // Навигация по шагам
   function goToStep(step) {
-    // Update step indicators
-    document.querySelectorAll('.reg-wizard__step-indicator').forEach(function(ind) {
-      var s = parseInt(ind.getAttribute('data-step'));
-      ind.classList.remove('active', 'done');
-      if (s === step) ind.classList.add('active');
-      else if (s < step) ind.classList.add('done');
-    });
-
-    // Show correct step panel
-    document.querySelectorAll('.reg-wizard__step').forEach(function(panel) {
-      panel.classList.remove('active');
-    });
-    var target = document.querySelector('.reg-wizard__step[data-step="' + step + '"]');
-    if (target) target.classList.add('active');
-
     currentStep = step;
+    wizardTrack.style.transform = `translateX(-${(step - 1) * 100}%)`;
 
-    // Populate summary on step 3
+    wizardSteps.forEach((ws, i) => {
+      ws.classList.remove('active', 'completed');
+      if (i + 1 === step) ws.classList.add('active');
+      if (i + 1 < step) ws.classList.add('completed');
+    });
+
+    // Заполнение сводки на шаге 3
     if (step === 3) {
-      document.getElementById('summary-name').textContent = document.getElementById('reg-name').value;
-      document.getElementById('summary-email').textContent = document.getElementById('reg-email').value;
-      document.getElementById('summary-phone').textContent = document.getElementById('reg-phone').value;
-      var selectedTicket = document.querySelector('input[name="ticket"]:checked').value;
-      document.getElementById('summary-ticket').textContent = ticketLabels[selectedTicket];
-      document.getElementById('summary-price').textContent = ticketPrices[selectedTicket];
+      fillSummary();
     }
   }
 
+  // Кнопки "Назад"
+  document.querySelectorAll('.wizard-prev').forEach(btn => {
+    btn.addEventListener('click', () => goToStep(currentStep - 1));
+  });
+
+  // Валидация шага 1
   function validateStep1() {
-    var valid = true;
-    var name = document.getElementById('reg-name');
-    var email = document.getElementById('reg-email');
-    var phone = document.getElementById('reg-phone');
+    const nameOk = regName.value.trim().length > 0;
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(regEmail.value.trim());
 
-    // Name
-    if (!name.value.trim()) {
-      name.classList.add('error');
-      name.nextElementSibling.textContent = 'Введите имя';
-      valid = false;
-    } else {
-      name.classList.remove('error');
-      name.nextElementSibling.textContent = '';
-    }
+    regName.classList.toggle('invalid', regName.value.length > 0 && !nameOk);
+    regEmail.classList.toggle('invalid', regEmail.value.length > 0 && !emailOk);
 
-    // Email
-    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email.value.trim() || !emailRegex.test(email.value)) {
-      email.classList.add('error');
-      email.nextElementSibling.textContent = 'Введите корректный email';
-      valid = false;
-    } else {
-      email.classList.remove('error');
-      email.nextElementSibling.textContent = '';
-    }
-
-    // Phone
-    if (!phone.value.trim()) {
-      phone.classList.add('error');
-      phone.nextElementSibling.textContent = 'Введите телефон';
-      valid = false;
-    } else {
-      phone.classList.remove('error');
-      phone.nextElementSibling.textContent = '';
-    }
-
-    return valid;
+    step1Next.disabled = !(nameOk && emailOk);
   }
 
-  // Next buttons
-  document.querySelectorAll('.btn--next').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var nextStep = parseInt(btn.getAttribute('data-next'));
-      if (currentStep === 1 && !validateStep1()) return;
-      goToStep(nextStep);
+  regName.addEventListener('input', validateStep1);
+  regEmail.addEventListener('input', validateStep1);
+
+  step1Next.addEventListener('click', () => {
+    if (!step1Next.disabled) goToStep(2);
+  });
+
+  // Валидация шага 2
+  function validateStep2() {
+    const planSelected = document.querySelector('input[name="plan"]:checked');
+    step2Next.disabled = !planSelected;
+  }
+
+  document.querySelectorAll('input[name="plan"]').forEach(r => {
+    r.addEventListener('change', validateStep2);
+  });
+
+  step2Next.addEventListener('click', () => {
+    if (!step2Next.disabled) goToStep(3);
+  });
+
+  // Заполнение сводки
+  function fillSummary() {
+    document.getElementById('sum-name').textContent = regName.value.trim();
+    document.getElementById('sum-email').textContent = regEmail.value.trim();
+    document.getElementById('sum-phone').textContent = regPhone.value.trim() || '—';
+
+    const planRadio = document.querySelector('input[name="plan"]:checked');
+    const planNames = { standard: 'Standard', vip: 'VIP', online: 'Online' };
+    const planPrices = { standard: '5 000', vip: '15 000', online: '2 000' };
+
+    if (planRadio) {
+      document.getElementById('sum-plan').textContent = planNames[planRadio.value];
+      document.getElementById('sum-total').textContent = planPrices[planRadio.value] + ' \u20BD';
+    }
+
+    document.getElementById('sum-promo').textContent = regPromo.value.trim() || '—';
+  }
+
+  // Подтверждение
+  confirmBtn.addEventListener('click', () => {
+    // Скрываем wizard, показываем success
+    wizardViewport.style.display = 'none';
+    document.querySelector('.wizard-steps').style.display = 'none';
+    successScreen.classList.add('visible');
+    createConfetti();
+  });
+
+  // Конфетти
+  function createConfetti() {
+    const confettiEl = document.getElementById('confetti');
+    const colors = ['#6c2bd9', '#00ff88', '#ff00ff', '#00c2ff', '#ff6b6b', '#ffdd00'];
+
+    for (let i = 0; i < 60; i++) {
+      const piece = document.createElement('div');
+      piece.classList.add('confetti-piece');
+      piece.style.left = Math.random() * 100 + '%';
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.width = (Math.random() * 10 + 5) + 'px';
+      piece.style.height = (Math.random() * 10 + 5) + 'px';
+      piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+      piece.style.animationDelay = Math.random() * 2 + 's';
+      piece.style.animationDuration = (Math.random() * 2 + 2) + 's';
+      confettiEl.appendChild(piece);
+    }
+  }
+
+  /* --- GSAP анимации --- */
+  if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Побуквенная анимация заголовков секций
+    document.querySelectorAll('[data-animate-title]').forEach(title => {
+      const text = title.textContent;
+      title.innerHTML = '';
+      text.split('').forEach(char => {
+        const span = document.createElement('span');
+        span.classList.add('char');
+        span.textContent = char === ' ' ? '\u00A0' : char;
+        title.appendChild(span);
+      });
+
+      // Сохраняем pseudo-element ::after
+      const afterEl = document.createElement('span');
+      afterEl.style.display = 'block';
+      afterEl.style.width = '60px';
+      afterEl.style.height = '3px';
+      afterEl.style.background = '#00ff88';
+      afterEl.style.margin = '16px auto 0';
+      afterEl.style.borderRadius = '2px';
+      title.appendChild(afterEl);
+
+      gsap.to(title.querySelectorAll('.char'), {
+        opacity: 1,
+        y: 0,
+        stagger: 0.04,
+        duration: 0.6,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: title,
+          start: 'top 85%',
+          toggleActions: 'play none none none'
+        }
+      });
+    });
+
+    // Карточки спикеров — stagger fade-in
+    gsap.from('.speaker-card', {
+      opacity: 0,
+      y: 60,
+      stagger: 0.15,
+      duration: 0.8,
+      ease: 'power3.out',
+      scrollTrigger: {
+        trigger: '.speakers-grid',
+        start: 'top 80%',
+        toggleActions: 'play none none none'
+      }
+    });
+
+    // Программа — scroll reveal
+    document.querySelectorAll('[data-scroll-reveal]').forEach(item => {
+      gsap.from(item, {
+        opacity: 0,
+        x: -40,
+        duration: 0.6,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: item,
+          start: 'top 90%',
+          toggleActions: 'play none none none'
+        }
+      });
+    });
+
+    // Тарифы — fade in
+    gsap.from('.pricing-card', {
+      opacity: 0,
+      y: 40,
+      stagger: 0.2,
+      duration: 0.7,
+      ease: 'power3.out',
+      scrollTrigger: {
+        trigger: '.pricing-grid',
+        start: 'top 80%',
+        toggleActions: 'play none none none'
+      }
+    });
+  }
+
+  /* --- Плавный скролл для CTA кнопок --- */
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = document.querySelector(anchor.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
     });
   });
 
-  // Prev buttons
-  document.querySelectorAll('.btn--prev').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var prevStep = parseInt(btn.getAttribute('data-prev'));
-      goToStep(prevStep);
-    });
-  });
-
-  // Submit
-  form.addEventListener('submit', function(e) {
-    e.preventDefault();
-    form.style.display = 'none';
-    document.querySelector('.reg-wizard__progress').style.display = 'none';
-    document.getElementById('reg-success').style.display = 'block';
-  });
-})();
+});
